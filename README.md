@@ -79,8 +79,7 @@ sudo systemctl start initia-monitoring.service && sudo journalctl -fu initia-mon
 ## Known bugs and errors
 
 1. It might "hallucinate" a bit with the blocks and show that you are a bit of ahead. Check cycle lasts 15
-seconds where it checks for all of the RPCs and and the end it will check with your node. Depending on the
-block production it might show that you are ahead 5 to 15 blocks and the logs will show something like this:
+seconds where it checks for all of the RPCs and and the end it will check with your node. During those 15 seconds a couple of blocks will be produced that is why there is a difference at the end of the cycle. Depending on the block production speed this number might vary a bit. It will show data like this but the important thing is if you see it like this it means that the node is actualy synced up and it is not missing blocks. :
 
 ```
 2024-06-01 14:11:02,046 - INFO - Current block height difference: -11 blocks
