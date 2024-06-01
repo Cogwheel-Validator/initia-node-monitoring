@@ -3,7 +3,6 @@ import asyncio
 import logging
 import os
 import yaml
-from datetime import datetime
 
 STATE_FILE = 'previous_state.yml'
 
@@ -60,7 +59,7 @@ def load_previous_state():
     if os.path.exists(STATE_FILE):
         with open(STATE_FILE, 'r') as file:
             return yaml.safe_load(file)
-    return {'previous_height_diff': None, 'last_alert_level': None}
+    return {'previous_height_diff': None, 'last_alert_level': 0}
 
 def save_previous_state(height_diff, alert_level):
     state = {'previous_height_diff': height_diff, 'last_alert_level': alert_level}
@@ -89,15 +88,15 @@ async def alert(height_diff, alert_levels, telegram_config, previous_state):
 
     if current_alert_level > last_alert_level:
         message = f"Alert Level {current_alert_level}: Block height difference is {height_diff} blocks!"
-    elif current_alert_level < last_alert_level and previous_height_diff is not None:
-        message = f"Alert Level Improving to {current_alert_level}: Block height difference has decreased from {previous_height_diff} to {height_diff} blocks!"
+    elif current_alert_level < last_alert_level:
+        message = f"Alert Level Dropping to {current_alert_level}: Block height difference is {height_diff} blocks!"
     elif current_alert_level == last_alert_level:
         return  # No change in alert level, no need to send a message
 
     if message:
         logging.info(message)
         await send_telegram_message(telegram_config['bot_token'], telegram_config['chat_id'], message)
-    
+
     # Save the new state
     save_previous_state(height_diff, current_alert_level)
 
@@ -115,6 +114,10 @@ async def periodic_check():
         'level_5': config['alerts'][4]['level_5']
     }
 
+    # Initialize the node down timer and notification timer
+    node_down_timer = 0
+    notification_timer = 0
+
     while True:
         logging.info("Starting new check cycle.")
         heights = await check_status(rpc_urls)
@@ -124,20 +127,43 @@ async def periodic_check():
             if height_diff is not None:
                 previous_state = load_previous_state()
                 await alert(height_diff, alert_levels, telegram_config, previous_state)
+                # Reset the node down timer and notification timer since the node is reachable
+                node_down_timer = 0
+                notification_timer = 0
             else:
-                # Alert if the node cannot be reached
-                await send_telegram_message(
-                    telegram_config['bot_token'], 
-                    telegram_config['chat_id'], 
-                    "Node is down or cannot be reached!"
-                )
+                # Increment the node down timer
+                node_down_timer += 15
+                if node_down_timer >= 60:  # 3 minutes in seconds
+                    # Increment the notification timer
+                    notification_timer += 15
+                    if notification_timer >= 60:  # 3 minutes in seconds
+                        # Send a notification if it's been 3 minutes since the last notification
+                        await send_telegram_message(
+                            telegram_config['bot_token'],
+                            telegram_config['chat_id'],
+                            "Node has been down for more than 3 minutes!"
+                        )
+                        # Reset the notification timer
+                        notification_timer = 0
         else:
-            # Alert if none of the RPC endpoints can be reached
-            await send_telegram_message(
-                telegram_config['bot_token'], 
-                telegram_config['chat_id'], 
-                "None of the RPC endpoints can be reached!"
-            )
+            # Increment the node down timer
+            node_down_timer += 15
+            if node_down_timer >= 60:  # 3 minutes in seconds
+                # Increment the notification timer
+                notification_timer += 15
+                if notification_timer >= 60:  # 3 minutes in seconds
+                    # Send a notification if it's been 3 minutes since the last notification
+                    await send_telegram_message(
+                        telegram_config['bot_token'],
+                        telegram_config['chat_id'],
+                        "None of the RPC endpoints can be reached for more than 3 minutes!"
+                    )
+                    # Reset the notification timer
+                    notification_timer = 0
+
+        # Log the current block height difference at the end of each cycle
+        logging.info(f"Current block height difference: {height_diff if height_diff is not None else 'N/A'} blocks")
+
         await asyncio.sleep(15)
 
 if __name__ == "__main__":
