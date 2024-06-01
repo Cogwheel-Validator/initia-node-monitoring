@@ -1,18 +1,19 @@
 # Use public RPC endpoints or if you have use your own
 rpcs:
-  -url: https://initia-testnet-rpc.cogwheel.zone
-  -url: https://initia-testnet-rpc.polkachu.com
-  -url: https://initia-testnet.rpc.nodex.one
-  -url: https://initia-testnet-rpc.tienthuattoan.com
-  -url: https://initia-testnet.rpc.kjnodes.com
-  -url: https://rpc-initia-testnet.whispernode.com
-  -url: https://rpc-initia-testnet.trusted-point.com
-  -url: https://initia-testnet-rpc.f5nodes.com
-  -url: https://testnet-initia-rpc.lavenderfive.com
-  -url: https://initia-testnet-rpc.crouton.digital
-  -url: https://initia-testnet-rpc.blacknodes.net
-  -url: http://initia-testnet-rpc.staking4all.org
-  -url: https://test-rpc-initia.bughole.io
+  - url: https://rpc.initiation-1.initia.xyz
+  - url: https://initia-testnet-rpc.cogwheel.zone
+  - url: https://initia-testnet-rpc.polkachu.com
+  - url: https://initia-testnet.rpc.nodex.one
+  - url: https://initia-testnet-rpc.tienthuattoan.com
+  - url: https://initia-testnet.rpc.kjnodes.com
+  - url: https://rpc-initia-testnet.whispernode.com
+  - url: https://rpc-initia-testnet.trusted-point.com
+  - url: https://initia-testnet-rpc.f5nodes.com
+  - url: https://testnet-initia-rpc.lavenderfive.com
+  - url: https://initia-testnet-rpc.crouton.digital
+  - url: https://initia-testnet-rpc.blacknodes.net
+  - url: http://initia-testnet-rpc.staking4all.org
+  - url: https://test-rpc-initia.bughole.io
 # Use rpc from your own node witch you want to check the height
 # Examples http://127.0.0.1:26657 or localhost:26657 or https://rpc.example.com if you serve it over nginx/apache
 node:
